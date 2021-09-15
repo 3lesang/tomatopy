@@ -1,4 +1,3 @@
-from ctypes import POINTER
 from tkinter import *
 from tkinter import filedialog
 import vlc
