@@ -13,11 +13,11 @@ class newSetting():
         self.showData()
 
     def readData(self):
-        data = getjson.readSetting('user.json')
+        data = getjson.readSetting('settings.json')
         return data
 
     def showData(self):
-        data = getjson.readSetting('user.json')
+        data = getjson.readSetting('settings.json')
         output = str(data)
         self.text.insert(INSERT, output)
 
@@ -25,7 +25,7 @@ class newSetting():
         data = self.text.get("1.0", "end-1c")
         data = data.replace("\'", "\"")
         output = json.loads(data)
-        getjson.writeSetting('user.json', output)
+        getjson.writeSetting('settings.json', output)
         self.screenSetting.destroy()
 
     def initScreen(self, mainapp):

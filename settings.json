@@ -7,12 +7,12 @@
     "long": 15,
     "longInterval": 4,
     "short": 5,
-    "soundIndex": 2,
+    "soundIndex": 0,
     "sounds": [
         "shotgun.mp3",
         "horse.wav",
         "geese.mp3"
     ],
     "transparent": "blue",
-    "work": 25
+    "work": 1
 }

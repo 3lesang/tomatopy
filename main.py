@@ -1,8 +1,7 @@
+from ctypes import POINTER
 from tkinter import *
+from tkinter import filedialog
 import vlc
-from pystray import MenuItem as item
-import pystray
-from PIL import Image, ImageTk
 
 import components
 from setting import newSetting
@@ -20,6 +19,8 @@ class Tomato:
         self.pathRefreshButtonIcon = 'img/refresh.png'
         self.pathMusicButtonIcon = 'img/music.png'
         self.pathSounds = 'sound/'
+        self.media_player = vlc.MediaListPlayer()
+        self.media = self.media_player.get_media_player()
         self.state = 0
         self.timeCount = 0
         self.timeInit = self.timeCount
@@ -39,6 +40,10 @@ class Tomato:
         self.frameStopPlay = components.createFrame(self.mainApp)
         self.frameNav = components.createFrame(self.mainApp)
         self.frameOption = components.createFrame(self.mainApp)
+        self.volume = Scale(self.frameOption, orient=HORIZONTAL, cursor='hand2',
+                            bd=0, length=150, showvalue=0, width=8, highlightthickness=0, troughcolor='#ddd', sliderrelief=FLAT, command=self.controlVolume)
+        self.volume.set(50)
+        self.media.audio_set_volume(self.volume.get())
         self.playButtonIcon = PhotoImage(file=self.pathPlayButtonIcon)
         self.stopButtonIcon = PhotoImage(file=self.pathStopButtonIcon)
         self.settingButtonIcon = PhotoImage(file=self.pathSettingButtonIcon)
@@ -73,11 +78,12 @@ class Tomato:
         self.btnFocus.pack(side=LEFT)
         self.btnShortBreak.pack(side=LEFT)
         self.btnLongBreak.pack(side=LEFT)
+        self.volume.pack(side=LEFT)
         self.frameNav.pack()
         self.frameOption.pack(pady=16)
 
     def refresh(self):
-        self.data = self.loadData()
+        self.data = self.loadSetting()
         self.data["work"] = self.data["work"] * 60
         self.data["short"] = self.data["short"] * 60
         self.data["long"] = self.data["long"] * 60
@@ -89,8 +95,8 @@ class Tomato:
         self.mainApp.wm_attributes(
             '-transparentcolor', self.data["transparent"])
 
-    def loadData(self):
-        data = getjson.readSetting('user.json')
+    def loadSetting(self):
+        data = getjson.readSetting('settings.json')
         return data
 
     def setting(self):
@@ -187,11 +193,25 @@ class Tomato:
         media = vlc.MediaPlayer(soundName)
         media.play()
 
-    def closeicon():
-        pass
-
     def playMusic(self):
-        pass
+        if(self.media_player.is_playing()):
+            self.media_player.stop()
+        player = vlc.Instance()
+        media_list = player.media_list_new()
+        self.fileNames = filedialog.askopenfilenames(
+            initialdir='/', title='Select a list file music', filetypes=(('Mp3 file', '.mp3'), ('Wav file', '.wav')))
+        if(self.fileNames):
+            for file in self.fileNames:
+                music = player.media_new(file)
+                media_list.add_media(music)
+            self.media_player.set_media_list(media_list)
+
+            self.media_player.play()
+
+    def controlVolume(self, value=None):
+        number = self.volume.get()
+        media = self.media_player.get_media_player()
+        media.audio_set_volume(number)
 
     def resetTime(self):
         self.timeCount = self.timeInit
@@ -200,28 +220,6 @@ class Tomato:
         if(self.onTime):
             self.timeDisplay.after_cancel(self.onTime)
         self.onTime = None
-
-
-def quit_window(icon, item):
-    icon.stop()
-    app.destroy()
-
-# Define a function to show the window again
-
-
-def show_window(icon, item):
-    icon.stop()
-    app.after(0, app.deiconify())
-
-# Hide the window and show on the system taskbar
-
-
-def hide_window():
-    app.withdraw()
-    image = Image.open("img/tomato.ico")
-    menu = (item('Quit', quit_window), item('Show', show_window))
-    icon = pystray.Icon("name", image, "Tomato", menu)
-    icon.run()
 
 
 tomato = Tomato(app)
